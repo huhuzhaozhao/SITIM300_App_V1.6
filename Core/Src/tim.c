@@ -91,6 +91,9 @@ void MX_TIM7_Init(void)
   else if(0xFFFFFFFF == ul_CmdData)
 	htim7.Init.Period = 10000-1; // 100HZ
 	
+  htim7.Init.Period = 2000-1; // 500hz
+  //htim7.Init.Period = 1000-1; // 1000hz
+  
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {

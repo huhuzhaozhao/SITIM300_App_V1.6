@@ -95,6 +95,9 @@ typedef struct
 	volatile int16_t  sGyrXRaw;
 	volatile int16_t  sGyrYRaw;
 	volatile int16_t  sGyrZRaw;
+    volatile int16_t  sAccXRaw;
+	volatile int16_t  sAccYRaw;
+	volatile int16_t  sAccZRaw;
 }MT6_SumRawType;
 
 typedef struct
@@ -112,6 +115,18 @@ typedef struct
 
 #pragma pack(4)
 #if(1 == CONSENSUAL_CONTROL_FLAG)
+//typedef union
+//{
+//	struct
+//	{
+//		float     fGyrXValue;
+//		float     fGyrYValue;
+//		float     fGyrZValue;
+//		float     fTempValue;
+//	}tData;
+//	
+//	uint8_t aucBuffer[16];
+//}MT6_DataType;
 typedef union
 {
 	struct
@@ -119,10 +134,13 @@ typedef union
 		float     fGyrXValue;
 		float     fGyrYValue;
 		float     fGyrZValue;
+		float     fAccXValue;
+		float     fAccYValue;
+		float     fAccZValue;
 		float     fTempValue;
 	}tData;
 	
-	uint8_t aucBuffer[16];
+	uint8_t aucBuffer[28];
 }MT6_DataType;
 #elif(2 == CONSENSUAL_CONTROL_FLAG)
 typedef union
@@ -187,7 +205,7 @@ typedef struct
 {
 	uint16_t  usSOF;
 	uint32_t  usFrameCnt;
-	uint8_t   data[10*8];
+	uint8_t   data[16*8];
 	uint8_t   ucCheckSum;
 }MT6_Send_Data1;
 //#elif(2 == CONSENSUAL_CONTROL_FLAG)
@@ -207,7 +225,7 @@ typedef struct
 {
 	uint16_t  usSOF;
 	uint32_t  usFrameCnt;
-	uint8_t   data[16];
+	uint8_t   data[28];
 	uint8_t   ucCheckSum;
 }MT6_Send_Data3;
 

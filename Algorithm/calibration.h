@@ -83,10 +83,10 @@ typedef struct			// IMU阵列数据 n组
 
 typedef struct			// IMU陀螺温补系数
 {
-	MYTYPE para[TCUT_ALL - 1][KB * D3]; // 23*(2+2+2)*4 = 138*4 = 552 Byte
+	MYTYPE para[TCUT_ALL - 1][KB * D3 * 2];		// 23*(2+2+2)*2*4 = 276*4 = 1104 Byte
 } GYRO_T_COMP;
 
-typedef struct					// 陀螺加计 温补及标定参数 (1+12+24+60+12+138*8+24+48+15+2+32+1)*4 = 1335*4 = 5340 Byte
+typedef struct					// 陀螺加计 温补及标定参数 (1+12+24+60+12+276*8+24+48+15+2+32+1)*4 = 2439*4 = 9756 Byte
 {
 	// #OSN_IMU16488,0#
 	MYTYPE Version;				// 例202500301
@@ -116,7 +116,7 @@ typedef struct					// 陀螺加计 温补及标定参数 (1+12+24+60+12+138*8+24
 	// #温度修正参数#
 	MYTYPE T_kb[KB];							// 温度自身系数 kb
 	// #IMU阵列选择，8组*[Gx;Gy;Gz;T]#
-	MYTYPE Array_xyzT_8[D3 + 1][IMU_COUNT];		// 对应位置 1为选择 0为弃用
+	MYTYPE Array_xyzT_8[D3 * 2 + 1][IMU_COUNT];	// 对应位置 1为选择 0为弃用
 	// #参数生成时间#
 	MYTYPE Time;								// 例250327
 	// $$

@@ -748,7 +748,7 @@ void imuProcess(void)
 	gyroTempCompensate(&sensor_data, &calib_para, &imu_array);
 
 	meanFusion(IMU_COUNT, ONLY_IMU);
-	accTempCompensate(&sensor_data, &calib_para);
+	//accTempCompensate(&sensor_data, &calib_para);
 
 	//if (
 	//	   isOverRange(sensor_data.gyro[0], 0)
@@ -764,9 +764,9 @@ void imuProcess(void)
 
 	calibrateAllSensor(&sensor_data, &calib_para);
 
-	sensor_data.gyro[0] = lowPassFilter(&filter[0], sensor_data.gyro[0]);
-	sensor_data.gyro[1] = lowPassFilter(&filter[1], sensor_data.gyro[1]);
-	sensor_data.gyro[2] = lowPassFilter(&filter[2], sensor_data.gyro[2]);
+//	sensor_data.gyro[0] = lowPassFilter(&filter[0], sensor_data.gyro[0]);
+//	sensor_data.gyro[1] = lowPassFilter(&filter[1], sensor_data.gyro[1]);
+//	sensor_data.gyro[2] = lowPassFilter(&filter[2], sensor_data.gyro[2]);
     
     assignmentStruct(OUT);
 }
@@ -827,6 +827,9 @@ void gyroTempCompensate(SENSOR_DATA* p_sensor, CALIB_PARA* p_para, IMU_ARRAY* p_
 			p_IMUarray->IMU[k].gyro[i] -=
 				(p_para->T_d23_kb_xyz[k].para[part][0 + i * D2] * T +
 				 p_para->T_d23_kb_xyz[k].para[part][1 + i * D2]); // kt+b
+            p_IMUarray->IMU[k].acc[i] -=
+                (p_para->T_d23_kb_xyz[k].para[part][0 + i * D2 + 6] * T +
+                 p_para->T_d23_kb_xyz[k].para[part][1 + i * D2 + 6]); // kt+b
 		}
 	}
 }
@@ -966,7 +969,7 @@ void imuParaInit(CALIB_PARA* p_para)
 	const MYTYPE t_Time    = p_para->Time;
 	MYTYPE t_G_pola[D3], t_A_pola[D3], t_G_axis[D3], t_A_axis[D3];
 	MYTYPE t_Gxyz_cut4[D3][GCUT];
-	MYTYPE t_Array_xyz_8[D3 + 1][IMU_COUNT];
+	MYTYPE t_Array_xyz_8[D3 * 2 + 1][IMU_COUNT];
 
 	memcpy(t_G_pola, p_para->G_pola, sizeof(t_G_pola));	// 临时保存
 	memcpy(t_A_pola, p_para->A_pola, sizeof(t_A_pola));
@@ -1155,7 +1158,7 @@ void meanFusion(char D, char only_T)
 
 		for (char j = 0; j < D; j++)
 		{
-			if (calib_para.Array_xyzT_8[D3][j]) // 仅计算所选IMU的温度平均值
+			if (calib_para.Array_xyzT_8[D3 * 2][j] > 0.5) // 仅计算所选IMU的温度平均值
 			{
 				num++;
 				sensor_data.T += imu_array.IMU[j].T;
@@ -1165,24 +1168,34 @@ void meanFusion(char D, char only_T)
 	}
 	else
 	{
-		// 陀螺 加计
+		// 陀螺
 		for (char i = 0; i < D3; i++)
 		{
 			num = 0.0; // 每轴不一样
 			sensor_data.gyro[i] = 0.0;
-			sensor_data.acc[i] = 0.0;
-
 			for (char j = 0; j < D; j++)
 			{
-				if (calib_para.Array_xyzT_8[i][j]) // 仅计算所选IMU的平均值
+				if (calib_para.Array_xyzT_8[i][j] > 0.5) // 仅计算所选IMU的平均值
 				{
 					num++;
 					sensor_data.gyro[i] += imu_array.IMU[j].gyro[i];
+				}
+			}
+			sensor_data.gyro[i] /= num; // 平均
+		}
+        // 加计
+		for (char i = 0; i < D3; i++)
+		{
+			num = 0.0; // 每轴不一样
+			sensor_data.acc[i] = 0.0;
+			for (char j = 0; j < D; j++)
+			{
+				if (calib_para.Array_xyzT_8[i + D3][j] > 0.5) // 仅计算所选IMU的平均值
+				{
+					num++;
 					sensor_data.acc[i] += imu_array.IMU[j].acc[i];
 				}
 			}
-
-			sensor_data.gyro[i] /= num; // 平均
 			sensor_data.acc[i] /= num; // 平均
 		}
 	}
@@ -1248,9 +1261,9 @@ void assignmentStruct(char IN_or_OUT)
 			imu_array.IMU[i].gyro[0] = g_tMT6_Data1[i].tData.fGyrXValue;
 			imu_array.IMU[i].gyro[1] = g_tMT6_Data1[i].tData.fGyrYValue;
 			imu_array.IMU[i].gyro[2] = g_tMT6_Data1[i].tData.fGyrZValue;
-//			imu_array.IMU[i].acc[0] = g_tMT6_Data1[i].tData.fAccXValue;
-//			imu_array.IMU[i].acc[1] = g_tMT6_Data1[i].tData.fAccYValue;
-//			imu_array.IMU[i].acc[2] = g_tMT6_Data1[i].tData.fAccZValue;
+			imu_array.IMU[i].acc[0] = g_tMT6_Data1[i].tData.fAccXValue;
+			imu_array.IMU[i].acc[1] = g_tMT6_Data1[i].tData.fAccYValue;
+			imu_array.IMU[i].acc[2] = g_tMT6_Data1[i].tData.fAccZValue;
 		}
 		else
 		{
@@ -1258,9 +1271,9 @@ void assignmentStruct(char IN_or_OUT)
 			g_tMT6_Data1[i].tData.fGyrXValue = imu_array.IMU[i].gyro[0];
 			g_tMT6_Data1[i].tData.fGyrYValue = imu_array.IMU[i].gyro[1];
 			g_tMT6_Data1[i].tData.fGyrZValue = imu_array.IMU[i].gyro[2];
-//			g_tMT6_Data1[i].tData.fAccXValue = imu_array.IMU[i].acc[0];
-//			g_tMT6_Data1[i].tData.fAccYValue = imu_array.IMU[i].acc[1];
-//			g_tMT6_Data1[i].tData.fAccZValue = imu_array.IMU[i].acc[2];
+			g_tMT6_Data1[i].tData.fAccXValue = imu_array.IMU[i].acc[0];
+			g_tMT6_Data1[i].tData.fAccYValue = imu_array.IMU[i].acc[1];
+			g_tMT6_Data1[i].tData.fAccZValue = imu_array.IMU[i].acc[2];
 		}
 		
 	}
