@@ -83,27 +83,50 @@ static void MT6_Read(SPI_HandleTypeDef *hspi, uint8_t ucReg, uint8_t ucLen, uint
 
 void MT6_ReadData(void)
 {
-		uint8_t i = 0;
-		memset(&g_tMT6_Raw1,0x00,sizeof(g_tMT6_Raw1));
+		volatile static uint8_t i = 0;
+//		memset(&g_tMT6_Raw1,0x00,sizeof(g_tMT6_Raw1));
 	
 //#if(1 == CONSENSUAL_CONTROL_FLAG)	
 			
-			for(i = 0; i < 8; i++)
+//			for(i = 0; i < 8; i++)
+//			{
+//					HAL_GPIO_WritePin(SPIn_CSn_Port[i],SPIn_CSn_Pin[i], GPIO_PIN_RESET);
+//					MT6_Read( SPIn[i],GST_OUT_TEMP_L_REG, 8, g_tMT6_Raw1[i].aucBuffer );
+//					HAL_GPIO_WritePin(SPIn_CSn_Port[i],SPIn_CSn_Pin[i], GPIO_PIN_SET);
+//				
+//					g_tMT6_Raw1[i].sTempRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[0] + (g_tMT6_Raw1[i].aucBuffer[1] << 8));
+//					g_tMT6_Raw1[i].sGyrXRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[2] + (g_tMT6_Raw1[i].aucBuffer[3] << 8));
+//					g_tMT6_Raw1[i].sGyrYRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[4] + (g_tMT6_Raw1[i].aucBuffer[5] << 8));
+//					g_tMT6_Raw1[i].sGyrZRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[6] + (g_tMT6_Raw1[i].aucBuffer[7] << 8));
+
+//					g_tMT6_Data1[i].tData.fTempValue = (float)g_tMT6_Raw1[i].sTempRaw / 256 + 25;
+//					g_tMT6_Data1[i].tData.fGyrXValue = (float)g_tMT6_Raw1[i].sGyrXRaw / 57.143f;
+//					g_tMT6_Data1[i].tData.fGyrYValue = (float)g_tMT6_Raw1[i].sGyrYRaw / 57.143f;
+//					g_tMT6_Data1[i].tData.fGyrZValue = (float)g_tMT6_Raw1[i].sGyrZRaw / 57.143f;
+//				
+//			}
+            for(i = 0; i < 8; i++)         
 			{
 					HAL_GPIO_WritePin(SPIn_CSn_Port[i],SPIn_CSn_Pin[i], GPIO_PIN_RESET);
-					MT6_Read( SPIn[i],GST_OUT_TEMP_L_REG, 8, g_tMT6_Raw1[i].aucBuffer );
+					MT6_Read( SPIn[i],GST_OUT_TEMP_L_REG, 14, g_tMT6_Raw1[i].aucBuffer );
 					HAL_GPIO_WritePin(SPIn_CSn_Port[i],SPIn_CSn_Pin[i], GPIO_PIN_SET);
-				
+			
 					g_tMT6_Raw1[i].sTempRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[0] + (g_tMT6_Raw1[i].aucBuffer[1] << 8));
 					g_tMT6_Raw1[i].sGyrXRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[2] + (g_tMT6_Raw1[i].aucBuffer[3] << 8));
 					g_tMT6_Raw1[i].sGyrYRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[4] + (g_tMT6_Raw1[i].aucBuffer[5] << 8));
 					g_tMT6_Raw1[i].sGyrZRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[6] + (g_tMT6_Raw1[i].aucBuffer[7] << 8));
-
+					g_tMT6_Raw1[i].sAccXRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[8] + (g_tMT6_Raw1[i].aucBuffer[9] << 8));
+					g_tMT6_Raw1[i].sAccYRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[10] + (g_tMT6_Raw1[i].aucBuffer[11] << 8));
+					g_tMT6_Raw1[i].sAccZRaw = (int16_t)(g_tMT6_Raw1[i].aucBuffer[12] + (g_tMT6_Raw1[i].aucBuffer[13] << 8));
+			
 					g_tMT6_Data1[i].tData.fTempValue = (float)g_tMT6_Raw1[i].sTempRaw / 256 + 25;
 					g_tMT6_Data1[i].tData.fGyrXValue = (float)g_tMT6_Raw1[i].sGyrXRaw / 57.143f;
 					g_tMT6_Data1[i].tData.fGyrYValue = (float)g_tMT6_Raw1[i].sGyrYRaw / 57.143f;
 					g_tMT6_Data1[i].tData.fGyrZValue = (float)g_tMT6_Raw1[i].sGyrZRaw / 57.143f;
-				
+					g_tMT6_Data1[i].tData.fAccXValue = (float)g_tMT6_Raw1[i].sAccXRaw / 1875;
+					g_tMT6_Data1[i].tData.fAccYValue = (float)g_tMT6_Raw1[i].sAccYRaw / 1875;
+					g_tMT6_Data1[i].tData.fAccZValue = (float)g_tMT6_Raw1[i].sAccZRaw / 1875;
+                
 			}
 
 
@@ -232,7 +255,37 @@ void MT6_Init(void)
 
 void Frame_Protocol_Packet_Send3(void)
 {
-	static uint8_t uc_PackCnt3 = 0;
+//	static uint8_t uc_PackCnt3 = 0;
+//	MT6_DataType g_tMT6_Data3 = {0};
+//	
+//	memset(&g_aucSend_Data3,0x00,sizeof(MT6_Send_Data3));
+//	memset(&Send_data,0x00,sizeof(MT6_Send_Data3));
+//	
+//	uc_PackCnt3++;
+//	
+//	if(uc_PackCnt3 >= Frequency_PACK)
+//	{
+//		uc_PackCnt3 = Frequency_PACK;
+//		g_aucSend_Data3.usSOF = 0x55AA;
+//		g_aucSend_Data3.usFrameCnt = ui_FrameSum++;
+//    
+//		g_tMT6_Data3.tData.fTempValue = sensor_data.T;
+//		g_tMT6_Data3.tData.fGyrXValue = sensor_data.gyro[0];
+//		g_tMT6_Data3.tData.fGyrYValue = sensor_data.gyro[1];
+//		g_tMT6_Data3.tData.fGyrZValue = sensor_data.gyro[2];
+
+//	
+//		for(uint8_t i = 0; i < 16; i++)
+//		{
+//			 g_aucSend_Data3.ucCheckSum += g_tMT6_Data3.aucBuffer[i];	
+//			 g_aucSend_Data3.data[i] = g_tMT6_Data3.aucBuffer[i];
+//		}
+//		
+//		g_aucSend_Data3.ucCheckSum += sum_bytes(g_aucSend_Data3.usFrameCnt);
+//		memcpy(Send_data,&g_aucSend_Data3,sizeof(g_aucSend_Data3));
+//		MT6_SendData(Send_data,sizeof(g_aucSend_Data3));
+//	}
+    static uint8_t uc_PackCnt3 = 0;
 	MT6_DataType g_tMT6_Data3 = {0};
 	
 	memset(&g_aucSend_Data3,0x00,sizeof(MT6_Send_Data3));
@@ -243,16 +296,18 @@ void Frame_Protocol_Packet_Send3(void)
 	if(uc_PackCnt3 >= Frequency_PACK)
 	{
 		uc_PackCnt3 = Frequency_PACK;
-		g_aucSend_Data3.usSOF = 0x55AA;
+		g_aucSend_Data3.usSOF = 0xAA55;
 		g_aucSend_Data3.usFrameCnt = ui_FrameSum++;
-    
-		g_tMT6_Data3.tData.fTempValue = sensor_data.T;
+
 		g_tMT6_Data3.tData.fGyrXValue = sensor_data.gyro[0];
 		g_tMT6_Data3.tData.fGyrYValue = sensor_data.gyro[1];
 		g_tMT6_Data3.tData.fGyrZValue = sensor_data.gyro[2];
-
+        g_tMT6_Data3.tData.fAccXValue = sensor_data.acc[0];
+		g_tMT6_Data3.tData.fAccYValue = sensor_data.acc[1];
+		g_tMT6_Data3.tData.fAccZValue = sensor_data.acc[2];
+        g_tMT6_Data3.tData.fTempValue = sensor_data.T;
 	
-		for(uint8_t i = 0; i < 16; i++)
+		for(uint8_t i = 0; i < 28; i++)
 		{
 			 g_aucSend_Data3.ucCheckSum += g_tMT6_Data3.aucBuffer[i];	
 			 g_aucSend_Data3.data[i] = g_tMT6_Data3.aucBuffer[i];
@@ -312,7 +367,7 @@ void Frame_Protocol_Packet_Send1(void)
 				g_aucSend_Data1.usSOF = 0x55AA;
 				g_aucSend_Data1.usFrameCnt = ui_FrameSum++;
 				
-				for(uint8_t i = 0; i < 10*8; i++)
+				for(uint8_t i = 0; i < 16*8; i++)
 				{
 					g_aucSend_Data1.ucCheckSum += g_aucSend_Data1.data[i];	
 				}
@@ -397,6 +452,9 @@ uint8_t AddSample(void)
             g_tMT6_SumData[i].sGyrXRaw += g_tMT6_Raw1[i].sGyrXRaw;
             g_tMT6_SumData[i].sGyrYRaw += g_tMT6_Raw1[i].sGyrYRaw;
             g_tMT6_SumData[i].sGyrZRaw += g_tMT6_Raw1[i].sGyrZRaw;
+            g_tMT6_SumData[i].sAccXRaw += g_tMT6_Raw1[i].sAccXRaw;
+            g_tMT6_SumData[i].sAccYRaw += g_tMT6_Raw1[i].sAccYRaw;
+            g_tMT6_SumData[i].sAccZRaw += g_tMT6_Raw1[i].sAccZRaw;
         }
         Sample_Cnt++;
     }
